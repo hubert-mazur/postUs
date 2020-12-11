@@ -3,9 +3,14 @@ const validationSchemas = require("../validationSchemas/user");
 const neo4j = require("neo4j-driver");
 
 router.post("/", async (request, response) => {
-  const { err } = validationSchemas.registerValidation(request.body);
-  if (err) {
-    return response.status(400).send({ error: true, meta: "", body: err });
+  // const { err } = await validationSchemas.registerValidation(request.body);
+  // if (err) {
+  // }
+  // console.error(err);
+
+  const err = await validationSchemas.registerValidation(request.body);
+  if (err.error) {
+    return response.status(400).send({ error: true, meta: "", body: err.error });
   }
 
   const result = await neo4j.driver.session.run(
@@ -36,13 +41,11 @@ router.post("/", async (request, response) => {
   if (saveUser.records[0].get("count") != 1) {
     return response.status(400).send({ error: true, meta: "", body: saveUser });
   } else {
-    return response
-      .status(200)
-      .send({
-        error: true,
-        meta: "OK",
-        body: { id: saveUser.records[0].get("id") },
-      });
+    return response.status(200).send({
+      error: true,
+      meta: "OK",
+      body: { id: saveUser.records[0].get("id") },
+    });
   }
 });
 
