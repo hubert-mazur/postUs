@@ -14,7 +14,7 @@ neo4j.driver.verifyConnectivity()
         console.log(msg)
     })
 
-neo4j.driver.session = neo4j.driver.session({database: 'neo4j'});
+// neo4j.driver.session = neo4j.driver.session({database: 'neo4j'});
 
 
 
@@ -32,14 +32,16 @@ const wallRoute = require("./routes/wall");
 // Middlewares
 app.use(express.json());
 app.use(function(req, res, next) {
-  res.header("Access-Control-Allow-Origin", "*"); // update to match the domain you will make the request from
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  res.header("Access-Control-Allow-Origin", "http://localhost:3001"); // update to match the domain you will make the request from
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, auth-token");
+  res.header('Access-Control-Allow-Credentials', true);
+  res.header('Access-Control-Allow-Methods', "GET, POST, PUT, DELETE,OPTIONS");
   next();
 });
 // Routes middlewares
 
-app.use("/api/login", authRoute);
-app.use("/api/register", registerRoute);
+app.use("/login", authRoute);
+app.use("/register", registerRoute);
 app.use("/api/post", interactionRoute);
 app.use("/api/people", peopleRoute);
 app.use('/api/dashboard', dashboardRoute);

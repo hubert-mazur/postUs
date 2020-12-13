@@ -9,7 +9,8 @@ router.post("/", async (request, response) => {
     return response.status(401).send({ error: true, meta: "", body: err });
   }
 
-  const result = await neo4j.driver.session
+  const session = neo4j.driver.session();
+  const result = await session
     .run(
       `MATCH (n:Person {email:\'${request.body.login}\'}) RETURN n.password, COUNT(n) as count, id(n) as id`
     )

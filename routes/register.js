@@ -25,11 +25,13 @@ router.post("/", async (request, response) => {
       .send({ error: true, meta: "user exists", body: "" });
   }
 
+  const now = new Date();
+
   const saveUser = await neo4j.driver.session.run(
     `CREATE (n:Person {name: $name, lastName: $lastName,joined: $date,born: $birthday,email: $email,password: $password}) RETURN COUNT(n) as count, id(n) as id`,
     {
       name: request.body.name,
-      date: Date.now(),
+      date: neo4j.types.DateTime.fromStandardDate(now),
       birthday: request.body.born,
       email: request.body.email,
       password: request.body.password,
