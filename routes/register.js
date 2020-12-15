@@ -3,51 +3,63 @@ const validationSchemas = require("../validationSchemas/user");
 const neo4j = require("neo4j-driver");
 
 router.post("/", async (request, response) => {
-  // const { err } = await validationSchemas.registerValidation(request.body);
-  // if (err) {
-  // }
-  // console.error(err);
-
   const err = await validationSchemas.registerValidation(request.body);
   if (err.error) {
-    return response.status(400).send({ error: true, meta: "", body: err.error });
-  }
-
-  const result = await neo4j.driver.session.run(
-    `MATCH (n:Person {email:\'${request.body.email}\'}) RETURN COUNT(n) as count`
-  );
-
-  console.error(result.records[0].get("count"));
-
-  if (result.records[0].get("count") != 0) {
     return response
       .status(400)
-      .send({ error: true, meta: "user exists", body: "" });
+      .send({ error: true, meta: "", body: err.error });
+  }
+
+  session = neo4j.driver.session();
+  try {
+    const result = await session.run(
+      `MATCH (n:Person {email:\'${request.body.email}\'}) RETURN COUNT(n) as count`
+    );
+
+    if (result.records[0].get("count") != 0) {
+      return response
+        .status(400)
+        .send({ error: true, meta: "user exists", body: "" });
+    }
+  } catch (err) {
+    console.error(err);
+    return response.status(400).send({ error: true, meta: "", body: err });
+  } finally {
+    await session.close();
   }
 
   const now = new Date();
+  session = neo4j.driver.session();
 
-  const saveUser = await neo4j.driver.session.run(
-    `CREATE (n:Person {name: $name, lastName: $lastName,joined: $date,born: $birthday,email: $email,password: $password}) RETURN COUNT(n) as count, id(n) as id`,
-    {
-      name: request.body.name,
-      date: neo4j.types.DateTime.fromStandardDate(now),
-      birthday: request.body.born,
-      email: request.body.email,
-      password: request.body.password,
-      lastName: request.body.lastName,
+  try {
+    const saveUser = await session.run(
+      `CREATE (n:Person {name: $name, lastName: $lastName,joined: $date,born: $birthday,email: $email,password: $password}) RETURN COUNT(n) as count, id(n) as id`,
+      {
+        name: request.body.name,
+        date: neo4j.types.DateTime.fromStandardDate(now),
+        birthday: request.body.born,
+        email: request.body.email,
+        password: request.body.password,
+        lastName: request.body.lastName,
+      }
+    );
+
+    if (saveUser.records[0].get("count") != 1) {
+      return response
+        .status(400)
+        .send({ error: true, meta: "", body: saveUser });
     }
-  );
 
-  console.error(saveUser.records[0].get("count"));
-  if (saveUser.records[0].get("count") != 1) {
-    return response.status(400).send({ error: true, meta: "", body: saveUser });
-  } else {
     return response.status(200).send({
-      error: true,
+      error: false,
       meta: "OK",
-      body: { id: saveUser.records[0].get("id") },
+      body: "OK",
     });
+  } catch (err) {
+    console.error(err);
+    return response.status(400).send({ error: true, meta: "", body: err });
+  } finally {
+    await session.close();
   }
 });
 
