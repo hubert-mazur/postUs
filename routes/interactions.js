@@ -7,7 +7,7 @@ router.put("/:post_id/like", auth, async (request, response) => {
   const session = neo4j.driver.session();
   try {
     const result = await session.run(
-      "MATCH (a:Person), (p:POST) WHERE id(a) = $person_id AND id(p) = $post_id MERGE (a)-[:LIKES]->(p)",
+      "MATCH (a:hmPerson), (p:hmPOST) WHERE id(a) = $person_id AND id(p) = $post_id MERGE (a)-[:hmLIKES]->(p)",
       {
         person_id: request._id,
         post_id: neo4j.int(request.params.post_id),
@@ -28,7 +28,7 @@ router.delete("/:post_id/like", auth, async (request, response) => {
   const session = neo4j.driver.session();
   try {
     const result = await session.run(
-      "MATCH (a:Person)-[r:LIKES]->(p:POST) WHERE id(a) = $person_id AND id(p) = $post_id DELETE r",
+      "MATCH (a:hmPerson)-[r:hmLIKES]->(p:hmPOST) WHERE id(a) = $person_id AND id(p) = $post_id DELETE r",
       {
         person_id: request._id,
         post_id: neo4j.int(request.params.post_id),
@@ -50,7 +50,7 @@ router.post("/:post_id/comment", auth, async (request, response) => {
   const now = new Date();
   try {
     const result = await session.run(
-      "MATCH (a:Person), (p:POST) WHERE id(a) = $person_id AND id(p) = $post_id CREATE (a)-[:COMMENTED {timestamp: $date, text: $message}]->(p)",
+      "MATCH (a:hmPerson), (p:hmPOST) WHERE id(a) = $person_id AND id(p) = $post_id CREATE (a)-[:hmCOMMENTED {timestamp: $date, text: $message}]->(p)",
       {
         person_id: request._id,
         post_id: neo4j.int(request.params.post_id),
@@ -73,7 +73,7 @@ router.get("/:post_id/comment", auth, async (request, response) => {
   const session = neo4j.driver.session();
   try {
     const result = await session.run(
-      "MATCH (p:POST)<-[r:COMMENTED]-(n:Person) WHERE id(p) = $post_id RETURN n.name, n.lastName, id(n), r.text, r.timestamp",
+      "MATCH (p:hmPOST)<-[r:hmCOMMENTED]-(n:hmPerson) WHERE id(p) = $post_id RETURN n.name, n.lastName, id(n), r.text, r.timestamp",
       {
         post_id: neo4j.int(request.params.post_id),
       }

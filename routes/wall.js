@@ -7,7 +7,7 @@ router.get("/following", auth, async (request, response) => {
   const session = neo4j.driver.session();
   try {
     const result = await session.run(
-      "MATCH (a:Person)-[r:FOLLOWS]->(following:Person) WHERE id(a) = $id RETURN COUNT(following)",
+      "MATCH (a:hmPerson)-[r:hmFOLLOWS]->(following:hmPerson) WHERE id(a) = $id RETURN COUNT(following)",
       { id: request._id }
     );
     return response.status(200).send({ error: false, meta: "", body: result });
@@ -23,7 +23,7 @@ router.get("/followed", auth, async (request, response) => {
   const session = neo4j.driver.session();
   try {
     const result = await session.run(
-      "MATCH (a:Person)<-[r:FOLLOWS]-(followed:Person) WHERE id(a) = $id RETURN COUNT(followed)",
+      "MATCH (a:hmPerson)<-[r:hmFOLLOWS]-(followed:hmPerson) WHERE id(a) = $id RETURN COUNT(followed)",
       { id: request._id }
     );
     return response.status(200).send({ error: false, meta: "", body: result });
@@ -39,7 +39,7 @@ router.get("/", auth, async (request, response) => {
   const session = neo4j.driver.session();
   try {
     const result = await session.run(
-      "MATCH (me:Person)-[p:POSTED]->(n:POST) WHERE id(me) = $id OPTIONAL MATCH (n)<-[com:COMMENTED]-(c:Person) CALL {with n MATCH (n)<-[l:LIKES]-(:Person) RETURN COUNT(l) as likes}RETURN me.name, me.lastName, n, id(n), collect({com:com,name: c.name, lastName:c.lastName}) as comments, likes, EXISTS((me)-[:LIKES]->(n)) as doILike ORDER BY n.timestamp DESC",
+      "MATCH (me:hmPerson)-[p:hmPOSTED]->(n:hmPOST) WHERE id(me) = $id OPTIONAL MATCH (n)<-[com:hmCOMMENTED]-(c:hmPerson) CALL {with n MATCH (n)<-[l:hmLIKES]-(:hmPerson) RETURN COUNT(l) as likes}RETURN me.name, me.lastName, n, id(n), collect({com:com,name: c.name, lastName:c.lastName}) as comments, likes, EXISTS((me)-[:hmLIKES]->(n)) as doILike ORDER BY n.timestamp DESC",
       { id: request._id }
     );
     res = [];
@@ -65,7 +65,7 @@ router.post("/", auth, async (request, response) => {
   const session = neo4j.driver.session();
   try {
     const result = await session.run(
-      "MATCH (me:Person) WHERE id(me) = $id create (me)-[:POSTED]->(:POST {content: $content, timestamp: $timestamp})",
+      "MATCH (me:hmPerson) WHERE id(me) = $id create (me)-[:hmPOSTED]->(:hmPOST {content: $content, timestamp: $timestamp})",
       {
         id: request._id,
         timestamp: neo4j.types.DateTime.fromStandardDate(now),
@@ -85,7 +85,7 @@ router.delete("/:post_id/post", auth, async (request, response) => {
   const session = neo4j.driver.session();
   try {
     const result = await session.run(
-      "MATCH (p:POST) where id (p) = $post_id DETACH DELETE p",
+      "MATCH (p:hmPOST) where id (p) = $post_id DETACH DELETE p",
       {
         post_id: parseInt(request.params.post_id),
       }

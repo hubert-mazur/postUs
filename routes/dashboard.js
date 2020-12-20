@@ -7,7 +7,7 @@ router.get("/", auth, async (request, response) => {
   const session = neo4j.driver.session();
   try {
     const result = await session.run(
-      "MATCH (me:Person)-[r:FOLLOWS]->(b:Person)-[p:POSTED]->(n:POST) WHERE id(me) = $id OPTIONAL MATCH (n)<-[com:COMMENTED]-(c:Person)  CALL {with n MATCH (n)<-[l:LIKES]-(:Person) RETURN COUNT(l) as likes}RETURN b.name, b.lastName, n, id(n), collect({com:com,name: c.name, lastName:c.lastName}) as comments, likes, EXISTS((me)-[:LIKES]->(n)) as doILike ORDER BY n.timestamp DESC",
+      "MATCH (me:hmPerson)-[r:hmFOLLOWS]->(b:hmPerson)-[p:hmPOSTED]->(n:hmPOST) WHERE id(me) = $id OPTIONAL MATCH (n)<-[com:hmCOMMENTED]-(c:hmPerson)  CALL {with n MATCH (n)<-[l:hmLIKES]-(:hmPerson) RETURN COUNT(l) as likes}RETURN b.name, b.lastName, n, id(n), collect({com:com,name: c.name, lastName:c.lastName}) as comments, likes, EXISTS((me)-[:hmLIKES]->(n)) as doILike ORDER BY n.timestamp DESC",
       { id: request._id }
     );
 

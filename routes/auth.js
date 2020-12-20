@@ -5,14 +5,15 @@ const neo4j = require("neo4j-driver");
 
 router.post("/", async (request, response) => {
   const err = await validationSchemas.loginValidation(request.body);
+  console.error(request.body)
   if (err.error) {
-    return response.status(400).send({ error: true, meta: "", body: "HERE" });
+    return response.status(400).send({ error: true, meta: "", body: "err.error" });
   }
 
   const session = neo4j.driver.session();
   try {
     const result = await session.run(
-      `MATCH (n:Person {email:\'${request.body.email}\'}) RETURN n.password, COUNT(n) as count, id(n) as id`
+      `MATCH (n:hmPerson {email:\'${request.body.email}\'}) RETURN n.password, COUNT(n) as count, id(n) as id`
     );
 
     if (result.records.length == 0) {

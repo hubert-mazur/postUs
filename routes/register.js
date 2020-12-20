@@ -13,7 +13,7 @@ router.post("/", async (request, response) => {
   session = neo4j.driver.session();
   try {
     const result = await session.run(
-      `MATCH (n:Person {email:\'${request.body.email}\'}) RETURN COUNT(n) as count`
+      `MATCH (n:hmPerson {email:\'${request.body.email}\'}) RETURN COUNT(n) as count`
     );
 
     if (result.records[0].get("count") != 0) {
@@ -33,7 +33,7 @@ router.post("/", async (request, response) => {
 
   try {
     const saveUser = await session.run(
-      `CREATE (n:Person {name: $name, lastName: $lastName,joined: $date,born: $birthday,email: $email,password: $password}) RETURN COUNT(n) as count, id(n) as id`,
+      `CREATE (n:hmPerson {name: $name, lastName: $lastName,joined: $date,born: $birthday,email: $email,password: $password}) RETURN COUNT(n) as count, id(n) as id`,
       {
         name: request.body.name,
         date: neo4j.types.DateTime.fromStandardDate(now),

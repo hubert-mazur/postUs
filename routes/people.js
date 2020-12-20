@@ -8,7 +8,7 @@ router.put("/:user_id/follow", auth, async (request, response) => {
   const now = new Date();
   try {
     const result = await session.run(
-      "MATCH (a:Person), (b:Person) WHERE id(a) = $person_id AND id(b) = $user_id MERGE (a)-[:FOLLOWS {since: $date}]->(b)",
+      "MATCH (a:hmPerson), (b:hmPerson) WHERE id(a) = $person_id AND id(b) = $user_id MERGE (a)-[:hmFOLLOWS {since: $date}]->(b)",
       {
         person_id: request._id,
         user_id: neo4j.int(request.params.user_id),
@@ -30,7 +30,7 @@ router.delete("/:user_id/follow", auth, async (request, response) => {
   const session = neo4j.driver.session();
   try {
     const result = await session.run(
-      "MATCH (a:Person)-[r:FOLLOWS]->(b:Person) WHERE id(a) = $person_id AND id(b) = $user_id DELETE r",
+      "MATCH (a:hmPerson)-[r:hmFOLLOWS]->(b:hmPerson) WHERE id(a) = $person_id AND id(b) = $user_id DELETE r",
       {
         person_id: request._id,
         user_id: neo4j.int(request.params.user_id),
@@ -51,7 +51,7 @@ router.get("/", auth, async (request, response) => {
   const session = neo4j.driver.session();
   try {
     const result = await session.run(
-      "MATCH (a:Person) WHERE id(a) <> $id RETURN id(a), a.name, a.lastName",
+      "MATCH (a:hmPerson) WHERE id(a) <> $id RETURN id(a), a.name, a.lastName",
       { id: request._id }
     );
     return response.status(200).send({ error: false, meta: "", body: result });
@@ -67,7 +67,7 @@ router.get("/identity", auth, async (request, response) => {
   const session = neo4j.driver.session();
   try {
     const result = await session.run(
-      "MATCH (a:Person) WHERE id(a) = $id RETURN id(a), a.name, a.lastName",
+      "MATCH (a:hmPerson) WHERE id(a) = $id RETURN id(a), a.name, a.lastName",
       { id: request._id }
     );
     res = [];
@@ -92,7 +92,7 @@ router.get("/mayKnow", auth, async (request, response) => {
   const session = neo4j.driver.session();
   try {
     const result = await session.run(
-      "match (me:Person)-[f:FOLLOWS]->(myfriends:Person)-[theirFollows:FOLLOWS]->(c:Person) WHERE id(me) = $id AND NOT (me)-[:FOLLOWS]->(c) RETURN c, COUNT(theirFollows) as tf ORDER BY tf DESC",
+      "match (me:hmPerson)-[f:hmFOLLOWS]->(myfriends:hmPerson)-[theirFollows:hmFOLLOWS]->(c:hmPerson) WHERE id(me) = $id AND NOT (me)-[:hmFOLLOWS]->(c) RETURN c, COUNT(theirFollows) as tf ORDER BY tf DESC",
       { id: request._id }
     );
     res = [];
@@ -117,7 +117,7 @@ router.get("/followed", auth, async (request, response) => {
   const session = neo4j.driver.session();
   try {
     const result = await session.run(
-      "match (me:Person)-[f:FOLLOWS]->(myfriends:Person) where id(me) = $id RETURN myfriends;",
+      "match (me:hmPerson)-[f:hmFOLLOWS]->(myfriends:hmPerson) where id(me) = $id RETURN myfriends;",
       { id: request._id }
     );
     res = [];
@@ -142,7 +142,7 @@ router.get("/following", auth, async (request, response) => {
   const session = neo4j.driver.session();
   try {
     const result = await session.run(
-      "match (me:Person)<-[f:FOLLOWS]-(following:Person) where id(me) = $id RETURN following, EXISTS((me)-[:FOLLOWS]->(following)) as doIFollow;",
+      "match (me:hmPerson)<-[f:hmFOLLOWS]-(following:hmPerson) where id(me) = $id RETURN following, EXISTS((me)-[:hmFOLLOWS]->(following)) as doIFollow;",
       { id: request._id }
     );
 
@@ -168,7 +168,7 @@ router.get("/other", auth, async (request, response) => {
   const session = neo4j.driver.session();
   try {
     const result = await session.run(
-      "match (me:Person), (other:Person) where not (me)-[:FOLLOWS]->(other) and id(me) = $id RETURN other;",
+      "match (me:hmPerson), (other:hmPerson) where not (me)-[:hmFOLLOWS]->(other) and id(me) = $id RETURN other;",
       { id: request._id }
     );
     res = [];
