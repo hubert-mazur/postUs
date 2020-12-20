@@ -45,6 +45,6 @@ app.use("/api/people", peopleRoute);
 app.use("/api/dashboard", dashboardRoute);
 app.use("/api/wall", wallRoute);
 
-app.listen(3000, () => {
+app.listen(process.env.PORT || 3000, () => {
   console.log("Server started");
 });
